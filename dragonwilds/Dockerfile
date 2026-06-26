@@ -18,6 +18,9 @@ WORKDIR /opt/dragonwildsserver
 # Make sure the server executable is executable
 RUN chmod +x RSDragonwildsServer.sh
 
+# Set the volume for saved content for persistent storage
+VOLUME ["/opt/dragonwildsserver/RSDragonwilds/Saved"]
+
 # Expose the ports (N and N+1 are used for the server)
 EXPOSE 7777 7778
 
