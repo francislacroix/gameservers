@@ -1,0 +1,118 @@
+name: Deploy Shared Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infra/shared/**'
+  workflow_dispatch:
+    inputs:
+      resource_group:
+        description: 'Target resource group name'
+        required: true
+        default: 'gameservers'
+
+env:
+  AZURE_REGION: ${{ vars.AZURE_REGION }}
+  RESOURCE_GROUP: ${{ github.event_name == 'workflow_dispatch' && inputs.resource_group || vars.RESOURCE_GROUP }}
+  TEMPLATE: 'infra/shared/main.bicep'
+  PARAMETERS: 'infra/shared/main.bicepparam'
+  CONTAINER_REGISTRY_NAME: ${{ vars.REGISTRY_NAME }}
+
+jobs:
+  validate:
+    name: Validate Bicep
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Validate deployment
+        uses: azure/arm-deploy@v2
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          region: ${{ env.AZURE_REGION }}
+          template: ${{ env.TEMPLATE }}
+          parameters: >-
+            ${{ env.PARAMETERS }}
+            containerRegistryName: ${{ env.CONTAINER_REGISTRY_NAME }}
+          deploymentMode: Validate
+          deploymentName: shared-validate-${{ github.run_id }}
+
+  what-if:
+    name: What-If
+    runs-on: ubuntu-latest
+    needs: validate
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: What-If
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az deployment group what-if \
+              --resource-group "${{ env.RESOURCE_GROUP }}" \
+              --template-file ${{ env.TEMPLATE }} \
+              --parameters ${{ env.PARAMETERS }} \
+              --parameters containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }} \
+              --name shared-whatif-${{ github.run_id }}
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: what-if
+    environment: shared
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy shared infrastructure
+        uses: azure/arm-deploy@v2
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          region: ${{ env.AZURE_REGION }}
+          template: ${{ env.TEMPLATE }}
+          parameters: >-
+            ${{ env.PARAMETERS }}
+            containerRegistryName: ${{ env.CONTAINER_REGISTRY_NAME }}
+          deploymentMode: Incremental
+          deploymentName: shared-${{ github.run_id }}
+          failOnStdErr: true

@@ -27,7 +27,7 @@ param containerAppsSubnetPrefix string = '10.0.1.0/24'
 
 // Container Registry Parameters
 @description('Container Registry name.')
-param containerRegistryName string = 'gameservers-acr'
+param containerRegistryName string = 'lacroixgameservers'
 
 // Container Apps Environment Parameters
 @description('Container Apps Environment name.')
