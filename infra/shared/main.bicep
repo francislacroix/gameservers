@@ -118,9 +118,6 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-10-02-
         workloadProfileType: 'Consumption'
       }
     ]
-    appLogsConfiguration: {
-      destination: 'none'
-    }
   }
 }
 
