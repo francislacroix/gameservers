@@ -50,7 +50,7 @@ jobs:
             ${{ env.PARAMETERS }}
             containerRegistryName: ${{ env.CONTAINER_REGISTRY_NAME }}
           deploymentMode: Validate
-          deploymentName: shared-validate-${{ github.run_id }}
+          deploymentName: sharedinfra-validate-${{ github.run_id }}
 
   what-if:
     name: What-If
@@ -81,7 +81,7 @@ jobs:
               --template-file ${{ env.TEMPLATE }} \
               --parameters ${{ env.PARAMETERS }} \
               --parameters containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }} \
-              --name shared-whatif-${{ github.run_id }}
+              --name sharedinfra-whatif-${{ github.run_id }}
 
   deploy:
     name: Deploy
@@ -114,5 +114,5 @@ jobs:
             ${{ env.PARAMETERS }}
             containerRegistryName: ${{ env.CONTAINER_REGISTRY_NAME }}
           deploymentMode: Incremental
-          deploymentName: shared-${{ github.run_id }}
+          deploymentName: sharedinfra-${{ github.run_id }}
           failOnStdErr: true
