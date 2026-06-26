@@ -82,6 +82,9 @@ jobs:
               --parameters ${{ env.PARAMETERS }} \
               --parameters containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }} \
               --name sharedinfra-whatif-${{ github.run_id }}
+              --mode Incremental
+
+  ## TODO: Add approval/validation before proceeding with the deployment
 
   deploy:
     name: Deploy

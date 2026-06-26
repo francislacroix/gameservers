@@ -13,17 +13,11 @@ param vnetName string = 'gameservers-vnet'
 @description('Address space for the virtual network.')
 param vnetAddressPrefix string = '10.0.0.0/16'
 
-@description('Subnet used for private endpoints.')
-param privateEndpointsSubnetName string = 'gameservers-pe-snet'
-
-@description('Address prefix for the private endpoints subnet.')
-param privateEndpointsSubnetPrefix string = '10.0.0.0/24'
-
 @description('Subnet used by the Container Apps Environment infrastructure.')
 param containerAppsSubnetName string = 'gameservers-cae-snet'
 
 @description('Address prefix for the Container Apps subnet.')
-param containerAppsSubnetPrefix string = '10.0.1.0/24'
+param containerAppsSubnetPrefix string = '10.0.0.0/24'
 
 // Container Registry Parameters
 @description('Container Registry name.')
@@ -46,21 +40,16 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2025-07-01' = {
   }
 }
 
-resource privateEndpointsSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-07-01' = {
-  name: privateEndpointsSubnetName
-  parent: virtualNetwork
-  properties: {
-    addressPrefix: privateEndpointsSubnetPrefix
-    privateEndpointNetworkPolicies: 'Disabled'
-    privateLinkServiceNetworkPolicies: 'Enabled'
-  }
-}
-
 resource containerAppsSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-07-01' = {
   name: containerAppsSubnetName
   parent: virtualNetwork
   properties: {
     addressPrefix: containerAppsSubnetPrefix
+    serviceEndpoints: [
+      {
+        service: 'Microsoft.ContainerRegistry'
+      }
+    ]
     delegations: [
       {
         name: 'container-apps-delegation'
@@ -81,25 +70,17 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' =
   }
   properties: {
     adminUserEnabled: false
-    publicNetworkAccess: 'Disabled'
-  }
-}
-
-resource containerRegistryPrivateEndpoint 'Microsoft.Network/privateEndpoints@2025-07-01' = {
-  name: '${containerRegistryName}-pe'
-  location: location
-  properties: {
-    privateLinkServiceConnections: [
-      {
-        name: '${containerRegistryName}-plc'
-        properties: {
-          privateLinkServiceId: containerRegistry.id
-          groupIds: [
-            'registry'
-          ]
+    publicNetworkAccess: 'Enabled'
+    networkRuleBypassOptions: 'None'
+    networkRuleSet: any({
+      defaultAction: 'Deny'
+      virtualNetworkRules: [
+        {
+          id: containerAppsSubnet.id
+          action: 'Allow'
         }
-      }
-    ]
+      ]
+    })
   }
 }
 
@@ -122,6 +103,5 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2024-10-02-
 }
 
 output vnetId string = virtualNetwork.id
-output privateEndpointsSubnetId string = privateEndpointsSubnet.id
 output containerAppsSubnetId string = containerAppsSubnet.id
 output containerAppsEnvironmentId string = containerAppsEnvironment.id
