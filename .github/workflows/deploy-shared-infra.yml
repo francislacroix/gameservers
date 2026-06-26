@@ -48,7 +48,7 @@ jobs:
           template: ${{ env.TEMPLATE }}
           parameters: >-
             ${{ env.PARAMETERS }}
-            containerRegistryName: ${{ env.CONTAINER_REGISTRY_NAME }}
+            containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
           deploymentMode: Validate
           deploymentName: sharedinfra-validate-${{ github.run_id }}
 
@@ -112,7 +112,7 @@ jobs:
           template: ${{ env.TEMPLATE }}
           parameters: >-
             ${{ env.PARAMETERS }}
-            containerRegistryName: ${{ env.CONTAINER_REGISTRY_NAME }}
+            containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
           deploymentMode: Incremental
           deploymentName: sharedinfra-${{ github.run_id }}
           failOnStdErr: true
