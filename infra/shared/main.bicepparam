@@ -7,6 +7,7 @@ param containerAppsSubnetName = 'gameservers-cae-snet'
 param containerAppsSubnetPrefix = '10.0.0.0/24'
 
 param containerRegistryName = 'lacroixgameservers'
+param acrServicePrincipalObjectId = ''
 
 param storageAccountName = 'lacroixgameservers'
 

@@ -23,6 +23,9 @@ param containerAppsSubnetPrefix string = '10.0.0.0/24'
 @description('Container Registry name.')
 param containerRegistryName string = 'lacroixgameservers'
 
+@description('Object ID of the Service Principal to assign ACR Push and Pull roles.')
+param acrServicePrincipalObjectId string
+
 // Storage Parameters
 @description('Storage account name for persisted data. Must be globally unique and lowercase (3-24 chars).')
 @minLength(3)
@@ -67,7 +70,7 @@ resource containerAppsSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-07-
   }
 }
 
-//Step 2: Create the Azure Container Registry
+//Step 2: Create the Azure Container Registry and provide the necessary permissions for the GitHub running to push images to the registry
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   name: containerRegistryName
   location: location
@@ -77,6 +80,17 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' =
   properties: {
     adminUserEnabled: false
     publicNetworkAccess: 'Enabled'
+  }
+}
+
+// AcrPush: 8311e382-0749-4cb8-b61a-304f252e45ec
+resource acrPushRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(containerRegistry.id, acrServicePrincipalObjectId, '8311e382-0749-4cb8-b61a-304f252e45ec')
+  scope: containerRegistry
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8311e382-0749-4cb8-b61a-304f252e45ec')
+    principalId: acrServicePrincipalObjectId
+    principalType: 'ServicePrincipal'
   }
 }
 
