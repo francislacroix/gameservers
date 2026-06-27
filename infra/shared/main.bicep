@@ -119,11 +119,22 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
   name: storageAccountName
   location: location
   sku: {
-    name: 'Standard_LRS'
+    name: 'PremiumV2_LRS'
   }
-  kind: 'StorageV2'
+  kind: 'FileStorage'
   properties: {
-    accessTier: 'Hot'
+    networkAcls: {
+      ipv6Rules: []
+      bypass: 'AzureServices'
+      virtualNetworkRules: [
+        {
+          id: containerAppsSubnet.id
+          action: 'Allow'
+        }
+      ]
+      ipRules: []
+      defaultAction: 'Deny'
+    }
     allowBlobPublicAccess: false
     allowSharedKeyAccess: false
     minimumTlsVersion: 'TLS1_2'
