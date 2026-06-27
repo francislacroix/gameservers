@@ -1,4 +1,6 @@
-FROM steamcmd:latest
+ARG BASE_IMAGE=steamcmd:latest
+
+FROM $BASE_IMAGE
 
 # Create a directory for the server
 RUN mkdir -p /opt/dragonwildsserver
