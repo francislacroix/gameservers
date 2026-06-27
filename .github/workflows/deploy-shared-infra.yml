@@ -49,6 +49,7 @@ jobs:
           parameters: >-
             ${{ env.PARAMETERS }}
             containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
+            acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
           deploymentMode: Validate
           deploymentName: sharedinfra-validate-${{ github.run_id }}
 
@@ -81,6 +82,7 @@ jobs:
               --template-file ${{ env.TEMPLATE }} \
               --parameters ${{ env.PARAMETERS }} \
               --parameters containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }} \
+              --parameters acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }} \
               --name sharedinfra-whatif-${{ github.run_id }} \
               --mode Incremental
 
@@ -115,6 +117,7 @@ jobs:
           parameters: >-
             ${{ env.PARAMETERS }}
             containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
+            acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
           deploymentMode: Incremental
           deploymentName: sharedinfra-${{ github.run_id }}
           failOnStdErr: true
