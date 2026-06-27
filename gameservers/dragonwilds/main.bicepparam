@@ -1,6 +1,6 @@
 using '../../infra/gameserver/main.bicep'
 
-param storageAccountName = '' // Will be provided via pipeline variable, since this is a shared resource across multiple game servers
+param storageAccountName = '' // Will be provided via pipeline variable
 
 param fileShareConfigs = [
 	{
@@ -12,9 +12,10 @@ param fileShareConfigs = [
 	}
 ]
 
-param containerAppName = 'gameservers-dragonwilds'
-param containerAppsEnvironmentId = '/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.App/managedEnvironments/gameservers-cae'
-param containerImage = 'lacroixgameservers.azurecr.io/dragonwilds:latest'
+param containerAppName = 'dragonwilds'
+param containerAppsEnvironmentName = '' 		// Will be provided via pipeline variable
+param containerRegistry = ''								// Will be provided via pipeline variable
+param containerImage = 'dragonwilds:1'
 param command = './RSDragonwildsServer.sh'
 param args = [
 	'-log'

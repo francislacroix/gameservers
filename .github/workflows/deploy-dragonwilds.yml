@@ -1,11 +1,11 @@
-name: Deploy Shared Infrastructure
+name: Deploy Dragonwilds Container App
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'infra/shared/**'
+      - 'gameservers/dragonwilds/**'
   workflow_dispatch:
     inputs:
       resource_group:
@@ -16,11 +16,11 @@ on:
 env:
   AZURE_REGION: ${{ vars.AZURE_REGION }}
   RESOURCE_GROUP: ${{ github.event_name == 'workflow_dispatch' && inputs.resource_group || vars.RESOURCE_GROUP }}
-  TEMPLATE: 'infra/shared/main.bicep'
-  PARAMETERS: 'infra/shared/main.bicepparam'
-  CONTAINER_REGISTRY_NAME: ${{ vars.REGISTRY_NAME }}
+  TEMPLATE: 'infra/gameserver/main.bicep'
+  PARAMETERS: 'gameservers/dragonwilds/main.bicepparam'
   STORAGE_ACCOUNT_NAME: ${{ vars.STORAGE_ACCOUNT_NAME }}
   CONTAINER_APPS_ENVIRONMENT_NAME: ${{ vars.CONTAINER_APPS_ENV_NAME }}
+  CONTAINER_REGISTRY: ${{ vars.REGISTRY_NAME }}.azurecr.io
 
 jobs:
   validate:
@@ -50,12 +50,11 @@ jobs:
           template: ${{ env.TEMPLATE }}
           parameters: >-
             ${{ env.PARAMETERS }}
-            containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
-            acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
             storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }}
             containerAppsEnvironmentName=${{ env.CONTAINER_APPS_ENVIRONMENT_NAME }}
+            containerRegistry=${{ env.CONTAINER_REGISTRY }}
           deploymentMode: Validate
-          deploymentName: sharedinfra-validate-${{ github.run_id }}
+          deploymentName: dragonwilds-validate-${{ github.run_id }}
 
   what-if:
     name: What-If
@@ -85,14 +84,11 @@ jobs:
               --resource-group "${{ env.RESOURCE_GROUP }}" \
               --template-file ${{ env.TEMPLATE }} \
               --parameters ${{ env.PARAMETERS }} \
-              --parameters containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }} \
-              --parameters acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }} \
               --parameters storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }} \
               --parameters containerAppsEnvironmentName=${{ env.CONTAINER_APPS_ENVIRONMENT_NAME }} \
-              --name sharedinfra-whatif-${{ github.run_id }} \
+              --parameters containerRegistry=${{ env.CONTAINER_REGISTRY }} \
+              --name dragonwilds-whatif-${{ github.run_id }} \
               --mode Incremental
-
-  ## TODO: Add approval/validation before proceeding with the deployment
 
   deploy:
     name: Deploy
@@ -113,7 +109,7 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Deploy shared infrastructure
+      - name: Deploy dragonwilds container app
         uses: azure/arm-deploy@v2
         with:
           scope: resourcegroup
@@ -122,10 +118,9 @@ jobs:
           template: ${{ env.TEMPLATE }}
           parameters: >-
             ${{ env.PARAMETERS }}
-            containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
-            acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
             storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }}
             containerAppsEnvironmentName=${{ env.CONTAINER_APPS_ENVIRONMENT_NAME }}
+            containerRegistry=${{ env.CONTAINER_REGISTRY }}
           deploymentMode: Incremental
-          deploymentName: sharedinfra-${{ github.run_id }}
+          deploymentName: dragonwilds-${{ github.run_id }}
           failOnStdErr: true

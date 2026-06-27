@@ -33,8 +33,11 @@ param fileShareConfigs fileShareConfig[]
 @description('Name of the Container App for the game server.')
 param containerAppName string
 
-@description('ID of the Container Apps Environment where the game server will be deployed.')
-param containerAppsEnvironmentId string
+@description('Name of the Container Apps Environment where the game server will be deployed.')
+param containerAppsEnvironmentName string
+
+@description('Container registry where the image for the game server is stored.')
+param containerRegistry string
 
 @description('Container image for the game server.')
 param containerImage string
@@ -49,7 +52,7 @@ param args array
 param targetPort int
 
 @description('Additional port mappings for the game server (if any).')
-param additionalPortMappings array
+param additionalPortMappings array = []
 
 @description('CPU allocation for the container (e.g., "0.5").')
 param containerCpu string
@@ -74,7 +77,7 @@ resource nfsFileShares 'Microsoft.Storage/storageAccounts/fileServices/shares@20
 
 // Step 2: Create the Volume in the Container Apps Environment for each file share
 resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2026-01-01' existing = {
-  name: last(split(containerAppsEnvironmentId, '/'))
+  name: containerAppsEnvironmentName
 }
 
 resource environmentStorage 'Microsoft.App/managedEnvironments/storages@2026-01-01' = [
@@ -118,7 +121,7 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
       containers: [
         {
           name: containerAppName
-          image: containerImage
+          image: '${containerRegistry}/${containerImage}'
           command: [
             command
           ]

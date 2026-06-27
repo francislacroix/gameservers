@@ -11,4 +11,4 @@ param acrServicePrincipalObjectId = ''
 
 param storageAccountName = 'lacroixgameservers'
 
-param containerAppsEnvironmentName = 'gameservers-cae'
+param containerAppsEnvironmentName = ''
