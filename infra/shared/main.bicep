@@ -1,4 +1,4 @@
-// Bicep file for deploying the game server infrastructure.
+// Bicep file for deploying the shared game server infrastructure.
 // This file defines the resources shared by all game servers.
 targetScope = 'resourceGroup'
 
@@ -22,6 +22,12 @@ param containerAppsSubnetPrefix string = '10.0.0.0/24'
 // Container Registry Parameters
 @description('Container Registry name.')
 param containerRegistryName string = 'lacroixgameservers'
+
+// Storage Parameters
+@description('Storage account name for persisted data. Must be globally unique and lowercase (3-24 chars).')
+@minLength(3)
+@maxLength(24)
+param storageAccountName string = toLower('gameservers${uniqueString(resourceGroup().id)}')
 
 // Container Apps Environment Parameters
 @description('Container Apps Environment name.')
@@ -61,7 +67,7 @@ resource containerAppsSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-07-
   }
 }
 
-//Step 2: Create the Azure Container Registry and its private endpoint
+//Step 2: Create the Azure Container Registry
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   name: containerRegistryName
   location: location
@@ -71,16 +77,23 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' =
   properties: {
     adminUserEnabled: false
     publicNetworkAccess: 'Enabled'
-    networkRuleBypassOptions: 'None'
-    networkRuleSet: any({
-      defaultAction: 'Deny'
-      virtualNetworkRules: [
-        {
-          id: containerAppsSubnet.id
-          action: 'Allow'
-        }
-      ]
-    })
+  }
+}
+
+// Step 3: Create the Storage Account
+resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
+  name: storageAccountName
+  location: location
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
+    accessTier: 'Hot'
+    allowBlobPublicAccess: false
+    allowSharedKeyAccess: false
+    minimumTlsVersion: 'TLS1_2'
+    supportsHttpsTrafficOnly: true
   }
 }
 

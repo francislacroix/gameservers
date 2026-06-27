@@ -8,4 +8,6 @@ param containerAppsSubnetPrefix = '10.0.0.0/24'
 
 param containerRegistryName = 'lacroixgameservers'
 
+param storageAccountName = 'lacroixgameservers'
+
 param containerAppsEnvironmentName = 'gameservers-cae'
