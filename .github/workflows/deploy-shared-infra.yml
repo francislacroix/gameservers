@@ -21,6 +21,7 @@ env:
   CONTAINER_REGISTRY_NAME: ${{ vars.REGISTRY_NAME }}
   STORAGE_ACCOUNT_NAME: ${{ vars.STORAGE_ACCOUNT_NAME }}
   CONTAINER_APPS_ENVIRONMENT_NAME: ${{ vars.CONTAINER_APPS_ENV_NAME }}
+  MANAGED_IDENTITY_NAME: ${{ vars.CONTAINER_IMAGE_PULL_IDENTITY_NAME }}
 
 jobs:
   validate:
@@ -51,7 +52,8 @@ jobs:
           parameters: >-
             ${{ env.PARAMETERS }}
             containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
-            acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
+            gitHubServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
+            imagePullIdentityName=${{ env.MANAGED_IDENTITY_NAME }}
             storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }}
             containerAppsEnvironmentName=${{ env.CONTAINER_APPS_ENVIRONMENT_NAME }}
           deploymentMode: Validate
@@ -86,7 +88,8 @@ jobs:
               --template-file ${{ env.TEMPLATE }} \
               --parameters ${{ env.PARAMETERS }} \
               --parameters containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }} \
-              --parameters acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }} \
+              --parameters gitHubServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }} \
+              --parameters imagePullIdentityName=${{ env.MANAGED_IDENTITY_NAME }} \
               --parameters storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }} \
               --parameters containerAppsEnvironmentName=${{ env.CONTAINER_APPS_ENVIRONMENT_NAME }} \
               --name sharedinfra-whatif-${{ github.run_id }} \
@@ -123,7 +126,8 @@ jobs:
           parameters: >-
             ${{ env.PARAMETERS }}
             containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
-            acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
+            gitHubServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
+            imagePullIdentityName=${{ env.MANAGED_IDENTITY_NAME }}
             storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }}
             containerAppsEnvironmentName=${{ env.CONTAINER_APPS_ENVIRONMENT_NAME }}
           deploymentMode: Incremental

@@ -23,8 +23,11 @@ param containerAppsSubnetPrefix string = '10.0.0.0/24'
 @description('Container Registry name.')
 param containerRegistryName string = 'lacroixgameservers'
 
-@description('Object ID of the Service Principal to assign ACR Push and Pull roles.')
-param acrServicePrincipalObjectId string
+@description('Object ID of the GitHub Federated Service Principal to assign ACR Push and Pull roles.')
+param gitHubServicePrincipalObjectId string
+
+@description('Name of the user-assigned managed identity for pulling images from the container registry in container apps.')
+param imagePullIdentityName string
 
 // Storage Parameters
 @description('Storage account name for persisted data. Must be globally unique and lowercase (3-24 chars).')
@@ -70,7 +73,7 @@ resource containerAppsSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-07-
   }
 }
 
-//Step 2: Create the Azure Container Registry and provide the necessary permissions for the GitHub running to push images to the registry
+//Step 2: Create the Azure Container Registry and provide the necessary permissions
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   name: containerRegistryName
   location: location
@@ -85,11 +88,28 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' =
 
 // AcrPush: 8311e382-0749-4cb8-b61a-304f252e45ec
 resource acrPushRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(containerRegistry.id, acrServicePrincipalObjectId, '8311e382-0749-4cb8-b61a-304f252e45ec')
+  name: guid(containerRegistry.id, gitHubServicePrincipalObjectId, '8311e382-0749-4cb8-b61a-304f252e45ec')
   scope: containerRegistry
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '8311e382-0749-4cb8-b61a-304f252e45ec')
-    principalId: acrServicePrincipalObjectId
+    principalId: gitHubServicePrincipalObjectId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Create a user assigned managed identity for the container apps to pull images from the container registry
+resource imagePullIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: imagePullIdentityName
+  location: location
+}
+
+// AcrPull: 7f951dda-4ed3-4680-a7ca-43fe172d538d
+resource containerAppPullRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(containerRegistry.id, imagePullIdentity.id, 'acrpull')
+  scope: containerRegistry
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d')
+    principalId: imagePullIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
