@@ -86,7 +86,7 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2026-01-01'
   name: containerAppsEnvironmentName
 }
 
-resource environmentStorage 'Microsoft.App/managedEnvironments/storages@2026-01-01' = [
+resource environmentStorages 'Microsoft.App/managedEnvironments/storages@2026-01-01' = [
   for config in fileShareConfigs: {
     name: config.environmentVolumeName
     parent: containerAppsEnvironment
@@ -95,8 +95,12 @@ resource environmentStorage 'Microsoft.App/managedEnvironments/storages@2026-01-
         accessMode: 'ReadWrite'
         server: storageAccount.properties.primaryEndpoints.file
         shareName: '/${storageAccount.name}/${config.shareName}'
+      }
     }
-    }
+
+    dependsOn: [
+      nfsFileShares
+    ]
   }
 ]
 
@@ -157,4 +161,8 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
       }
     }
   }
+
+  dependsOn: [
+    environmentStorages
+  ]
 }
