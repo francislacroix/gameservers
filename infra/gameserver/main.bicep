@@ -92,9 +92,6 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2026-01-01'
   name: containerAppsEnvironmentName
 }
 
-
-
-
 resource environmentStorages 'Microsoft.App/managedEnvironments/storages@2026-01-01' = [
   for config in fileShareConfigs: {
     name: config.environmentVolumeName
@@ -102,7 +99,7 @@ resource environmentStorages 'Microsoft.App/managedEnvironments/storages@2026-01
     properties: {
       nfsAzureFile: {
         accessMode: 'ReadWrite'
-        server: storageAccount.properties.primaryEndpoints.file
+        server: split(replace(storageAccount.properties.primaryEndpoints.file, 'https://', ''), '/')[0]
         shareName: '/${storageAccount.name}/${config.shareName}'
       }
     }
