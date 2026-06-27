@@ -19,6 +19,7 @@ env:
   TEMPLATE: 'infra/shared/main.bicep'
   PARAMETERS: 'infra/shared/main.bicepparam'
   CONTAINER_REGISTRY_NAME: ${{ vars.REGISTRY_NAME }}
+  STORAGE_ACCOUNT_NAME: ${{ vars.STORAGE_ACCOUNT_NAME }}
 
 jobs:
   validate:
@@ -50,6 +51,7 @@ jobs:
             ${{ env.PARAMETERS }}
             containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
             acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
+            storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }}
           deploymentMode: Validate
           deploymentName: sharedinfra-validate-${{ github.run_id }}
 
@@ -83,6 +85,7 @@ jobs:
               --parameters ${{ env.PARAMETERS }} \
               --parameters containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }} \
               --parameters acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }} \
+              --parameters storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }} \
               --name sharedinfra-whatif-${{ github.run_id }} \
               --mode Incremental
 
@@ -118,6 +121,7 @@ jobs:
             ${{ env.PARAMETERS }}
             containerRegistryName=${{ env.CONTAINER_REGISTRY_NAME }}
             acrServicePrincipalObjectId=${{ secrets.AZURE_OBJECT_ID }}
+            storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }}
           deploymentMode: Incremental
           deploymentName: sharedinfra-${{ github.run_id }}
           failOnStdErr: true
