@@ -100,7 +100,7 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
   name: containerAppName
   location: location
   properties: {
-    managedEnvironmentId: containerAppsEnvironmentId
+    managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
