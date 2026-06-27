@@ -1,104 +1,145 @@
-// Storage Parameters
-@description('Storage account name for save data. Must be globally unique and lowercase (3-24 chars).')
-@minLength(3)
-@maxLength(24)
-param storageAccountName string = toLower('stgdragon${uniqueString(resourceGroup().id)}')
+// Bicep file for deploying the game server.
+// This file defines the resources and configuration for a specific game server.
+targetScope = 'resourceGroup'
 
-@description('Azure Files share name for save game data.')
-param fileShareName string = 'savegames'
+@description('Location for all resources.')
+param location string = resourceGroup().location
 
-@description('Quota for the Azure File Share in GiB.')
-@minValue(1)
-param fileShareQuotaGiB int = 100
+// Parameters for the game persistent storage
+param storageAccountName string
 
-resource fileShare 'Microsoft.FileShares/fileShares@2026-06-01' = {
-  name: fileShareName
-  location: location
-  properties: {
-    mountName: 'testmount'
-    protocol: 'NFS'
-    provisionedStorageGiB: 32
-    provisionedIOPerSec: 3032
-    provisionedThroughputMiBPerSec: 104
-    publicAccessProperties: {
-      allowedSubnets: []
-    }
-    redundancy: 'Local'
-    mediaTier: 'SSD'
-    nfsProtocolProperties: {
-      rootSquash: 'NoRootSquash'
-      encryptionInTransitRequired: 'Enabled'
-    }
-    publicNetworkAccess: 'Disabled'
-  }
-  tags: {}
+type fileShareConfig = {
+  @description('Azure Files share name for persisted game data.')
+  shareName: string
+
+  @description('Quota for the Azure File Share in GiB.')
+  @minValue(1)
+  shareQuotaGiB: int
+
+  @description('Name of the Azure Container Apps storage volume.')
+  environmentVolumeName: string
+
+  @description('Name of the volume inside the container.')
+  containerVolumeName: string
+
+   @description('Mount path for the volume inside the container.')
+  containerMountPath: string
 }
 
-resource environmentStorage 'Microsoft.App/managedEnvironments/storages@2024-10-02-preview' = {
-  name: saveVolumeName
-  parent: containerAppsEnvironment
-  properties: {
-    azureFile: {
-      accountName: storageAccount.name
-      accountKey: storageAccount.listKeys().keys[0].value
-      accessMode: 'ReadWrite'
-      shareName: saveGameFileShare.name
-    }
-  }
+@description('Array of file share configurations for persisted game data.')
+param fileShareConfigs fileShareConfig[]
+
+// Parameters for the game server Container App
+@description('Name of the Container App for the game server.')
+param containerAppName string
+
+@description('ID of the Container Apps Environment where the game server will be deployed.')
+param containerAppsEnvironmentId string
+
+@description('Container image for the game server.')
+param containerImage string
+
+@description('Command to run inside the container.')
+param command string
+
+@description('Arguments for the command inside the container.')
+param args array
+
+@description('Port on which the game server will listen for incoming connections.')
+param targetPort int
+
+@description('Additional port mappings for the game server (if any).')
+param additionalPortMappings array
+
+@description('CPU allocation for the container (e.g., "0.5").')
+param containerCpu string
+
+@description('Memory allocation for the container (e.g., "1Gi").')
+param containerMemory string
+
+// Step 1: Create Azure File Shares for persisted game data
+resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' existing = {
+  name: storageAccountName
 }
 
-resource containerApp 'Microsoft.App/containerApps@2025-01-01' = {
+resource nfsFileShares 'Microsoft.Storage/storageAccounts/fileServices/shares@2026-04-01' = [
+  for config in fileShareConfigs: {
+    name: '${storageAccount.name}/default/${config.shareName}'
+    properties: {
+      shareQuota: config.shareQuotaGiB
+      enabledProtocols: 'NFS'
+    }
+  }
+]
+
+// Step 2: Create the Volume in the Container Apps Environment for each file share
+resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2026-01-01' existing = {
+  name: last(split(containerAppsEnvironmentId, '/'))
+}
+
+resource environmentStorage 'Microsoft.App/managedEnvironments/storages@2026-01-01' = [
+  for config in fileShareConfigs: {
+    name: config.environmentVolumeName
+    parent: containerAppsEnvironment
+    properties: {
+      nfsAzureFile: {
+        accessMode: 'ReadWrite'
+        server: storageAccount.properties.primaryEndpoints.file
+        shareName: '${storageAccount.name}/${config.shareName}'
+    }
+    }
+  }
+]
+
+// Step 3: Create the Container App for the game server
+
+resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
   name: containerAppName
   location: location
   properties: {
-    managedEnvironmentId: containerAppsEnvironment.id
+    managedEnvironmentId: containerAppsEnvironmentId
     configuration: {
       activeRevisionsMode: 'Single'
-      ingress: null
-      secrets: hasRegistryCredentials ? [
-        {
-          name: 'acr-password'
-          value: registryPassword
-        }
-      ] : []
-      registries: hasRegistryCredentials ? [
-        {
-          server: registryServer
-          username: registryUsername
-          passwordSecretRef: 'acr-password'
-        }
-      ] : []
+      ingress: {
+        external: true
+        transport: 'tcp'
+        targetPort: targetPort
+        exposedPort: targetPort
+        additionalPortMappings: [
+          for portNumber in additionalPortMappings: {
+            external: true
+            targetPort: portNumber
+            exposedPort: portNumber
+          }
+        ]
+      }
     }
     template: {
       containers: [
         {
-          name: 'dragonwilds'
+          name: containerAppName
           image: containerImage
           command: [
-            './RSDragonwildsServer.sh'
+            command
           ]
-          args: [
-            '-log'
-            '-NewConsole'
-            '-Port=7777'
-          ]
+          args: args
           resources: {
             cpu: json(containerCpu)
             memory: containerMemory
           }
           volumeMounts: [
-            {
-              volumeName: saveVolumeName
-              mountPath: saveMountPath
+            for config in fileShareConfigs: {
+              volumeName: config.containerVolumeName
+              mountPath: config.containerMountPath
             }
           ]
         }
       ]
       volumes: [
-        {
-          name: saveVolumeName
-          storageType: 'AzureFile'
-          storageName: environmentStorage.name
+        for config in fileShareConfigs: {
+          name: config.containerVolumeName
+          storageType: 'NfsAzureFile'
+          storageName: config.environmentVolumeName
         }
       ]
       scale: {
