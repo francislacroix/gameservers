@@ -155,7 +155,7 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
       containers: [
         {
           name: containerAppName
-          image: containerImage
+          image: '${containerRegistry}/${containerImage}'
           command: [
             command
           ]
