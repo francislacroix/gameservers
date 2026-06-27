@@ -36,11 +36,14 @@ param containerAppName string
 @description('Name of the Container Apps Environment where the game server will be deployed.')
 param containerAppsEnvironmentName string
 
-@description('Container registry where the image for the game server is stored.')
+@description('Container registry server where the image for the game server is stored.')
 param containerRegistry string
 
-@description('Container image for the game server.')
+@description('Fully qualified container image for the game server.')
 param containerImage string
+
+@description('Name of the user-assigned managed identity for pulling images from the container registry.')
+param imagePullIdentityName string
 
 @description('Command to run inside the container.')
 param command string
@@ -86,6 +89,9 @@ resource containerAppsEnvironment 'Microsoft.App/managedEnvironments@2026-01-01'
   name: containerAppsEnvironmentName
 }
 
+
+
+
 resource environmentStorages 'Microsoft.App/managedEnvironments/storages@2026-01-01' = [
   for config in fileShareConfigs: {
     name: config.environmentVolumeName
@@ -105,14 +111,29 @@ resource environmentStorages 'Microsoft.App/managedEnvironments/storages@2026-01
 ]
 
 // Step 3: Create the Container App for the game server
-
+resource imagePullIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: imagePullIdentityName
+  location: location
+}
 resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
   name: containerAppName
   location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${imagePullIdentity.id}': {}
+    }
+  }
   properties: {
     managedEnvironmentId: containerAppsEnvironment.id
     configuration: {
       activeRevisionsMode: 'Single'
+      registries: [
+        {
+          server: containerRegistry
+          identity: imagePullIdentity.id
+        }
+      ]
       ingress: {
         external: true
         transport: 'tcp'
@@ -131,7 +152,7 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
       containers: [
         {
           name: containerAppName
-          image: '${containerRegistry}/${containerImage}'
+          image: containerImage
           command: [
             command
           ]

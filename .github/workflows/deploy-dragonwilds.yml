@@ -21,6 +21,7 @@ env:
   STORAGE_ACCOUNT_NAME: ${{ vars.STORAGE_ACCOUNT_NAME }}
   CONTAINER_APPS_ENVIRONMENT_NAME: ${{ vars.CONTAINER_APPS_ENV_NAME }}
   CONTAINER_REGISTRY: ${{ vars.REGISTRY_NAME }}.azurecr.io
+  MANAGED_IDENTITY_NAME: ${{ vars.CONTAINER_IMAGE_PULL_IDENTITY_NAME }}
 
 jobs:
   validate:
@@ -53,6 +54,7 @@ jobs:
             storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }}
             containerAppsEnvironmentName=${{ env.CONTAINER_APPS_ENVIRONMENT_NAME }}
             containerRegistry=${{ env.CONTAINER_REGISTRY }}
+            imagePullIdentityName=${{ env.MANAGED_IDENTITY_NAME }}
           deploymentMode: Validate
           deploymentName: dragonwilds-validate-${{ github.run_id }}
 
@@ -87,6 +89,7 @@ jobs:
               --parameters storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }} \
               --parameters containerAppsEnvironmentName=${{ env.CONTAINER_APPS_ENVIRONMENT_NAME }} \
               --parameters containerRegistry=${{ env.CONTAINER_REGISTRY }} \
+              --parameters imagePullIdentityName=${{ env.MANAGED_IDENTITY_NAME }} \
               --name dragonwilds-whatif-${{ github.run_id }} \
               --mode Incremental
 
@@ -121,6 +124,7 @@ jobs:
             storageAccountName=${{ env.STORAGE_ACCOUNT_NAME }}
             containerAppsEnvironmentName=${{ env.CONTAINER_APPS_ENVIRONMENT_NAME }}
             containerRegistry=${{ env.CONTAINER_REGISTRY }}
+            imagePullIdentityName=${{ env.MANAGED_IDENTITY_NAME }}
           deploymentMode: Incremental
           deploymentName: dragonwilds-${{ github.run_id }}
           failOnStdErr: true
