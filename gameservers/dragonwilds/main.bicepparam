@@ -5,7 +5,7 @@ param storageAccountName = '' // Will be provided via pipeline variable
 param fileShareConfigs = [
 	{
 		shareName: 'dragonwilds-savedcontent'
-		shareQuotaGiB: 10
+		shareQuotaGiB: 32
 		environmentVolumeName: 'dragonwilds-savedcontent'
 		containerVolumeName: 'dragonwilds-savedcontent'
 		containerMountPath: '/opt/dragonwildsserver/RSDragonwilds/Saved'

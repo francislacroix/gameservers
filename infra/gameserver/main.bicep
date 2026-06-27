@@ -78,8 +78,11 @@ resource nfsFileShares 'Microsoft.Storage/storageAccounts/fileServices/shares@20
     name: config.shareName
     parent: fileService
     properties: {
+      provisionedIops: 3000
+      provisionedBandwidthMibps: 100
       shareQuota: config.shareQuotaGiB
       enabledProtocols: 'NFS'
+      rootSquash: 'NoRootSquash'
     }
   }
 ]
