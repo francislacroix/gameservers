@@ -140,7 +140,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-08-01' = {
     allowBlobPublicAccess: false
     allowSharedKeyAccess: false
     minimumTlsVersion: 'TLS1_2'
-    supportsHttpsTrafficOnly: true
+    // Azure Files NFS requires secure transfer to be disabled.
+    supportsHttpsTrafficOnly: false
   }
 }
 
@@ -152,16 +153,10 @@ resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2025-08-01'
       enabled: false
     }
     protocolSettings: {
-      smb: {
-        encryptionInTransit: {
-          required: true
-        }
-      }
       nfs: {
         encryptionInTransit: {
-          required: true
+          required: false
         }
-       
       }
     }
   }
