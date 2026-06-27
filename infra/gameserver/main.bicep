@@ -65,9 +65,15 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' existing 
   name: storageAccountName
 }
 
+resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2026-04-01' existing = {
+  name: 'default'
+  parent: storageAccount
+}
+
 resource nfsFileShares 'Microsoft.Storage/storageAccounts/fileServices/shares@2026-04-01' = [
   for config in fileShareConfigs: {
-    name: '${storageAccount.name}/default/${config.shareName}'
+    name: config.shareName
+    parent: fileService
     properties: {
       shareQuota: config.shareQuotaGiB
       enabledProtocols: 'NFS'
