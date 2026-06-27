@@ -88,7 +88,7 @@ resource environmentStorage 'Microsoft.App/managedEnvironments/storages@2026-01-
       nfsAzureFile: {
         accessMode: 'ReadWrite'
         server: storageAccount.properties.primaryEndpoints.file
-        shareName: '${storageAccount.name}/${config.shareName}'
+        shareName: '/${storageAccount.name}/${config.shareName}'
     }
     }
   }
