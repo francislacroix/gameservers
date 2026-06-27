@@ -35,7 +35,7 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
-            az acr login --name ${{ vars.REGISTRY_NAME }}
+            az acr login --name ${{ vars.REGISTRY_NAME }} --expose-token
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
