@@ -16,6 +16,7 @@ param containerAppName = 'dragonwilds'
 param containerAppsEnvironmentName = '' 		// Will be provided via pipeline variable
 param containerRegistry = ''								// Will be provided via pipeline variable
 param containerImage = 'dragonwilds:1'
+param imagePullIdentityName = '' 						// Will be provided via pipeline variable
 param command = './RSDragonwildsServer.sh'
 param args = [
 	'-log'
