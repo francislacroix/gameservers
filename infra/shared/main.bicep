@@ -61,6 +61,9 @@ resource containerAppsSubnet 'Microsoft.Network/virtualNetworks/subnets@2025-07-
       {
         service: 'Microsoft.ContainerRegistry'
       }
+      {
+        service: 'Microsoft.Storage'
+      }
     ]
     delegations: [
       {
@@ -115,7 +118,7 @@ resource containerAppPullRoleAssignment 'Microsoft.Authorization/roleAssignments
 }
 
 // Step 3: Create the Storage Account
-resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
+resource storageAccount 'Microsoft.Storage/storageAccounts@2025-08-01' = {
   name: storageAccountName
   location: location
   sku: {
@@ -124,7 +127,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
   kind: 'FileStorage'
   properties: {
     networkAcls: {
-      ipv6Rules: []
       bypass: 'AzureServices'
       virtualNetworkRules: [
         {
@@ -139,6 +141,29 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2026-04-01' = {
     allowSharedKeyAccess: false
     minimumTlsVersion: 'TLS1_2'
     supportsHttpsTrafficOnly: true
+  }
+}
+
+resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2025-08-01' = {
+  name: 'default'
+  parent: storageAccount
+  properties: {
+    shareDeleteRetentionPolicy: {
+      enabled: false
+    }
+    protocolSettings: {
+      smb: {
+        encryptionInTransit: {
+          required: true
+        }
+      }
+      nfs: {
+        encryptionInTransit: {
+          required: true
+        }
+       
+      }
+    }
   }
 }
 
