@@ -161,6 +161,17 @@ resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
             cpu: json(containerCpu)
             memory: containerMemory
           }
+          probes: [
+            {
+              type: 'Startup'
+              tcpSocket: {
+                port: targetPort
+              }
+              initialDelaySeconds: 5
+              periodSeconds: 10
+              failureThreshold: 30
+            }
+          ]
           volumeMounts: [
             for config in fileShareConfigs: {
               volumeName: config.containerVolumeName
