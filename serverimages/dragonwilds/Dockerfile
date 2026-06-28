@@ -28,4 +28,3 @@ EXPOSE 7777 7778
 
 # Run the Dragonwilds server
 ENTRYPOINT ["./RSDragonwildsServer.sh"]
-CMD ["-log", "-NewConsole", "-Port=7777"]
