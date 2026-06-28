@@ -26,5 +26,5 @@ fi
 chmod 600 /etc/smbcredentials/$ACCOUNT_NAME.cred
 
 # Step 6: Add the mount entry to /etc/fstab and mount the share
-bash -c 'echo "//$ACCOUNT_NAME.file.core.windows.net/serverbackups /media//mnt/serverbackups cifs nofail,credentials=/etc/smbcredentials/$ACCOUNT_NAME.cred,dir_mode=0755,file_mode=0755,serverino,nosharesock,mfsymlinks,actimeo=30" >> /etc/fstab'
-mount -t cifs //$ACCOUNT_NAME.file.core.windows.net/serverbackups /media//mnt/serverbackups -o credentials=/etc/smbcredentials/$ACCOUNT_NAME.cred,dir_mode=0755,file_mode=0755,serverino,nosharesock,mfsymlinks,actimeo=30
+bash -c 'echo "//$ACCOUNT_NAME.file.core.windows.net/serverbackups /mnt/serverbackups cifs nofail,credentials=/etc/smbcredentials/$ACCOUNT_NAME.cred,dir_mode=0755,file_mode=0755,serverino,nosharesock,mfsymlinks,actimeo=30" >> /etc/fstab'
+mount -t cifs //$ACCOUNT_NAME.file.core.windows.net/serverbackups /mnt/serverbackups -o credentials=/etc/smbcredentials/$ACCOUNT_NAME.cred,dir_mode=0755,file_mode=0755,serverino,nosharesock,mfsymlinks,actimeo=30
