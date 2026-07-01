@@ -11,6 +11,9 @@ RUN useradd -m dragonwilds && chown -R dragonwilds:dragonwilds /opt/dragonwildss
 # Switch to the user that will run the server
 USER dragonwilds
 
+# Clear the SteamCMD app cache to prevent issues with updates
+RUN steamcmd +quit && rm -rf /home/dragonwilds/steamcmd/appcache/appinfo.vdf
+
 # Install Dragonwilds
 RUN steamcmd +force_install_dir /opt/dragonwildsserver +login anonymous +app_update 4019830 +quit
 
