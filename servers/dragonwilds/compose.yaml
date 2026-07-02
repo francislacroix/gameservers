@@ -7,6 +7,9 @@ services:
       dockerfile: Dockerfile
       args:
         - BASE_IMAGE=${REPO_NAME}/${BASE_IMAGE}
+      tags:
+        - latest
+        - ${VERSION_TAG}
     ports:
       - "${PORT_RANGE}:${PORT_RANGE}/udp"
       - "${PORT_RANGE}:${PORT_RANGE}/tcp"

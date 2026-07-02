@@ -5,12 +5,12 @@ on:
     branches:
       - main
     paths:
-      - 'serverimages/dragonwilds/Dockerfile'
+      - 'servers/dragonwilds/**'
   workflow_dispatch:
 
 env:
   REGISTRY: ${{ vars.REGISTRY_NAME }}.azurecr.io
-  BASE_IMAGE: ${{ vars.REGISTRY_NAME }}.azurecr.io/steamcmd:4
+  BASE_IMAGE: steamcmd:latest
   IMAGE_NAME: dragonwilds
 
 jobs:
@@ -48,14 +48,25 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Update .env
+        working-directory: servers/dragonwilds
+        run: |
+          ENV_FILE=".env"
+
+          if grep -q '^REPO_NAME=' "$ENV_FILE"; then
+            sed -i "s|^REPO_NAME=.*|REPO_NAME=${{ env.REGISTRY }}|" "$ENV_FILE"
+          else
+            echo "REPO_NAME=${{ env.REGISTRY }}" >> "$ENV_FILE"
+          fi
+
+          if grep -q '^VERSION_TAG=' "$ENV_FILE"; then
+            sed -i "s|^VERSION_TAG=.*|VERSION_TAG=${{ github.run_number }}|" "$ENV_FILE"
+          else
+            echo "VERSION_TAG=${{ github.run_number }}" >> "$ENV_FILE"
+          fi
+
       - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: serverimages/dragonwilds
-          file: serverimages/dragonwilds/Dockerfile
-          build-args: |
-            BASE_IMAGE=${{ env.BASE_IMAGE }}
-          push: true
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+        working-directory: servers/dragonwilds
+        run: |
+          docker compose build dragonwilds
+          docker compose push dragonwilds
