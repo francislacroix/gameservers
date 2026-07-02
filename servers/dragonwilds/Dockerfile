@@ -23,6 +23,9 @@ WORKDIR /opt/dragonwildsserver
 # Make sure the server executable is executable
 RUN chmod +x RSDragonwildsServer.sh
 
+# Copy the Config file
+COPY DedicatedServer.ini /opt/dragonwildsserver/RSDragonwilds/Saved/Config/Linux/
+
 # Set the volume for saved content for persistent storage
 VOLUME ["/opt/dragonwildsserver/RSDragonwilds/Saved"]
 

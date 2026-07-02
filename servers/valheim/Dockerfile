@@ -1,9 +1,8 @@
 ARG BASE_IMAGE=steamcmd:latest
-ARG SERVER_NAME=TheGang
-ARG SERVER_PORT_PRIMARY=2456
-ARG SERVER_PORT_SECONDARY=2457
-ARG WORLD_NAME=TheGangWorld
-ARG SERVER_PASSWORD=Patate!
+ARG SERVER_NAME=servername
+ARG SERVER_PORT_RANGE=2456-2457
+ARG WORLD_NAME=worldname
+ARG SERVER_PASSWORD=password
 
 FROM $BASE_IMAGE
 
@@ -39,7 +38,7 @@ RUN chmod +x start_server.sh
 VOLUME ["/home/valheim/.config/unity3d/IronGate/Valheim/worlds"]
 
 # Expose the ports (N and N+1 are used for the server)
-EXPOSE $SERVER_PORT_PRIMARY $SERVER_PORT_SECONDARY
+EXPOSE ${SERVER_PORT_RANGE}
 
 # Run the Valheim server
 ENTRYPOINT ["./start_server.sh"]
