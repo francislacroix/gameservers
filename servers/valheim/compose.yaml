@@ -1,0 +1,13 @@
+services:
+  valheim:
+    image: lacroixgameservers.azurecr.io/valheim:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: valheim
+    ports:
+      - "2456-2457:2456-2457/udp"
+      - "2456-2457:2456-2457/tcp"
+    volumes:
+      - /gameservermounts/valheim:/home/valheim/.config/unity3d/IronGate/Valheim/worlds
+    restart: unless-stopped

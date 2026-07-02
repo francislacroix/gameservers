@@ -1,0 +1,14 @@
+services:
+  dragonwilds:
+    image: ${REPO_NAME}/dragonwilds:latest
+    container_name: dragonwilds
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "7777:7777/udp"
+      - "7778:7778/udp"
+    volumes:
+      - /gameservermounts/dragonwilds:/opt/dragonwildsserver/RSDragonwilds/Saved
+    restart: unless-stopped
+
