@@ -1,7 +1,8 @@
 ARG BASE_IMAGE=steamcmd:latest
 ARG SERVER_NAME=servername
 ARG SERVER_PASSWORD=password
-ARG SERVER_PORT=2456
+ARG SERVER_BASE_PORT=2456
+ARG SERVER_PORT_RANGE=2456-2457
 ARG WORLD_NAME=worldname
 
 FROM $BASE_IMAGE
@@ -9,7 +10,8 @@ FROM $BASE_IMAGE
 # Redeclare the arguments to make them available
 ARG SERVER_NAME
 ARG SERVER_PASSWORD
-ARG SERVER_PORT
+ARG SERVER_BASE_PORT
+ARG SERVER_PORT_RANGE
 ARG WORLD_NAME
 
 # Create a directory for the server
@@ -32,7 +34,7 @@ WORKDIR /opt/valheim
 
 # Update the start server command in start_server.sh
 RUN sed -i "s/My server/${SERVER_NAME}/g" start_server.sh \
-    && sed -i "s/2456/${SERVER_PORT}/g" start_server.sh \
+    && sed -i "s/2456/${SERVER_BASE_PORT}/g" start_server.sh \
     && sed -i "s/Dedicated/${WORLD_NAME}/g" start_server.sh \
     && sed -i "s/secret/${SERVER_PASSWORD}/g" start_server.sh
 
@@ -43,7 +45,7 @@ RUN chmod +x start_server.sh
 VOLUME ["/home/valheim/.config/unity3d/IronGate/Valheim/worlds"]
 
 # Expose the ports (N and N+1 are used for the server)
-EXPOSE ${SERVER_PORT}
+EXPOSE ${SERVER_PORT_RANGE}
 
 # Run the Valheim server
 ENTRYPOINT ["./start_server.sh"]

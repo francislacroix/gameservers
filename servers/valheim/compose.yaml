@@ -8,17 +8,16 @@ services:
       args:
         - BASE_IMAGE=${REPO_NAME}/${BASE_IMAGE}
         - SERVER_NAME=${SERVER_NAME}
-        - SERVER_PORT=${SERVER_PORT}
+        - SERVER_BASE_PORT=${SERVER_BASE_PORT}
+        - SERVER_PORT_RANGE=${SERVER_PORT_RANGE}
         - SERVER_PASSWORD=${SERVER_PASSWORD}
         - WORLD_NAME=${WORLD_NAME}
       tags:
         - ${REPO_NAME}/valheim:latest
         - ${REPO_NAME}/valheim:${VERSION_TAG}
     ports:
-      - "${SERVER_PORT}:${SERVER_PORT}/udp"
-      - "${SERVER_PORT}:${SERVER_PORT}/tcp"
-      - "${SERVER_PORT+1}:${SERVER_PORT+1}/udp"
-      - "${SERVER_PORT+1}:${SERVER_PORT+1}/tcp"
+      - "${SERVER_PORT_RANGE}:${SERVER_PORT_RANGE}/udp"
+      - "${SERVER_PORT_RANGE}:${SERVER_PORT_RANGE}/tcp"
     volumes:
       - /gameservermounts/${CONTAINER_NAME}:/home/valheim/.config/unity3d/IronGate/Valheim/worlds
     restart: unless-stopped
