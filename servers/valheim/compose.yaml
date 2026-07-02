@@ -7,9 +7,18 @@ services:
       dockerfile: Dockerfile
       args:
         - BASE_IMAGE=${REPO_NAME}/${BASE_IMAGE}
+        - SERVER_NAME=${SERVER_NAME}
+        - SERVER_PORT=${SERVER_PORT}
+        - SERVER_PASSWORD=${SERVER_PASSWORD}
+        - WORLD_NAME=${WORLD_NAME}
+      tags:
+        - ${REPO_NAME}/valheim:latest
+        - ${REPO_NAME}/valheim:${VERSION_TAG}
     ports:
-      - "${PORT_RANGE}:${PORT_RANGE}/udp"
-      - "${PORT_RANGE}:${PORT_RANGE}/tcp"
+      - "${SERVER_PORT}:${SERVER_PORT}/udp"
+      - "${SERVER_PORT}:${SERVER_PORT}/tcp"
+      - "${SERVER_PORT+1}:${SERVER_PORT+1}/udp"
+      - "${SERVER_PORT+1}:${SERVER_PORT+1}/tcp"
     volumes:
       - /gameservermounts/${CONTAINER_NAME}:/home/valheim/.config/unity3d/IronGate/Valheim/worlds
     restart: unless-stopped

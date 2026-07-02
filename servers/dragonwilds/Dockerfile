@@ -12,7 +12,7 @@ RUN useradd -m dragonwilds && chown -R dragonwilds:dragonwilds /opt/dragonwildss
 USER dragonwilds
 
 # Clear the SteamCMD app cache to prevent issues with updates
-RUN steamcmd +quit && rm -rf /home/dragonwilds/steamcmd/appcache/appinfo.vdf
+RUN steamcmd +quit && rm -rf ~/.local/share/Steam/appcache/appinfo.vdf
 
 # Install Dragonwilds
 RUN steamcmd +force_install_dir /opt/dragonwildsserver +login anonymous +app_update 4019830 +quit
@@ -23,8 +23,16 @@ WORKDIR /opt/dragonwildsserver
 # Make sure the server executable is executable
 RUN chmod +x RSDragonwildsServer.sh
 
-# Copy the Config file
-COPY DedicatedServer.ini /opt/dragonwildsserver/RSDragonwilds/Saved/Config/Linux/
+# Create the server config file
+RUN mkdir -p /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer \
+    && echo ";METADATA=(Diff=true, UseCommands=true)" > /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "[/Script/Dominion.DedicatedServerSettings]" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "AdminPassword=${SERVER_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "OwnerId=${SERVER_PASSWORD}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "ServerGuid=${SERVER_PORT}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "ServerName=${WORLD_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "WorldPassword=${WORLD_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "DefaultWorldName=${WORLD_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini
 
 # Set the volume for saved content for persistent storage
 VOLUME ["/opt/dragonwildsserver/RSDragonwilds/Saved"]

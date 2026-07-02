@@ -24,9 +24,10 @@ RUN apt-get update -y \
 # Create symlink for executable
 RUN ln -s /usr/games/steamcmd /usr/bin/steamcmd
 
-# Update steamcmd (apt-get install doesn't install latest)
-RUN steamcmd +quit
+# Update steamcmd (apt-get install doesn't always install latest) and clear the SteamCMD app cache to prevent issues with updates
+RUN steamcmd +quit && rm -rf /root/.local/share/Steam/appcache/appinfo.vdf
 
 # Set default command
-ENTRYPOINT ["steamcmd"]
-CMD ["+help", "+quit"]
+# ENTRYPOINT ["steamcmd"]
+# CMD ["+help", "+quit"]
+ENTRYPOINT ["bash", "-c", "sleep 300"]
