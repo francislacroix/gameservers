@@ -2,6 +2,14 @@ ARG BASE_IMAGE=steamcmd:latest
 
 FROM $BASE_IMAGE
 
+ARG SERVER_ID
+ARG SERVER_NAME
+ARG SERVER_ADMIN_PASSWORD
+ARG SERVER_OWNER_ID
+ARG WORLD_NAME
+ARG WORLD_PASSWORD
+ARG SERVER_PORT_RANGE='7777-7778'
+
 # Create a directory for the server
 RUN mkdir -p /opt/dragonwildsserver
 
@@ -27,12 +35,13 @@ RUN chmod +x RSDragonwildsServer.sh
 RUN mkdir -p /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer \
     && echo ";METADATA=(Diff=true, UseCommands=true)" > /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
     && echo "[/Script/Dominion.DedicatedServerSettings]" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
-    && echo "AdminPassword=${SERVER_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
-    && echo "OwnerId=${SERVER_PASSWORD}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
-    && echo "ServerGuid=${SERVER_PORT}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
-    && echo "ServerName=${WORLD_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
-    && echo "WorldPassword=${WORLD_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
-    && echo "DefaultWorldName=${WORLD_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini
+    && echo "ServerGuid=${SERVER_ID}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "ServerName=${SERVER_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "AdminPassword=${SERVER_ADMIN_PASSWORD}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "OwnerId=${SERVER_OWNER_ID}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "DefaultWorldName=${WORLD_NAME}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini \
+    && echo "WorldPassword=${WORLD_PASSWORD}" >> /opt/dragonwildsserver/RSDragonwilds/Saved/Config/LinuxServer/DedicatedServer.ini
+    
 
 # Set the volume for saved content for persistent storage
 VOLUME ["/opt/dragonwildsserver/RSDragonwilds/Saved"]

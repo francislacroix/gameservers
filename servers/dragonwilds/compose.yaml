@@ -7,6 +7,13 @@ services:
       dockerfile: Dockerfile
       args:
         - BASE_IMAGE=${REPO_NAME}/${BASE_IMAGE}
+        - SERVER_ID=${SERVER_ID}
+        - SERVER_NAME=${SERVER_NAME}
+        - SERVER_ADMIN_PASSWORD=${SERVER_ADMIN_PASSWORD}
+        - SERVER_OWNER_ID=${SERVER_OWNER_ID}
+        - WORLD_NAME=${WORLD_NAME}
+        - WORLD_PASSWORD=${WORLD_PASSWORD}
+        - SERVER_PORT_RANGE=${PORT_RANGE}
       tags:
         - latest
         - ${VERSION_TAG}
@@ -14,6 +21,6 @@ services:
       - "${PORT_RANGE}:${PORT_RANGE}/udp"
       - "${PORT_RANGE}:${PORT_RANGE}/tcp"
     volumes:
-      - /gameservermounts/${CONTAINER_NAME}:/opt/dragonwildsserver/RSDragonwilds/Saved
+      - ${LOCAL_MOUNT_PATH}/${CONTAINER_NAME}:/opt/dragonwildsserver/RSDragonwilds/Saved
     restart: unless-stopped
 
