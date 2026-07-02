@@ -14,6 +14,9 @@ ENV SERVER_PASSWORD=${SERVER_PASSWORD}}
 ENV SERVER_BASE_PORT=${SERVER_BASE_PORT}}
 ENV WORLD_NAME=${WORLD_NAME}}
 
+# Install dependencies
+RUN apt-get update && apt-get install -y libatomic1 libpulse-dev libc6
+
 # Create a directory for the server
 RUN mkdir -p /opt/valheim
 
