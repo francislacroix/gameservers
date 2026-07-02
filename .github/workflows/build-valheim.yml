@@ -1,0 +1,71 @@
+name: Build and Push Valheim
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'servers/valheim/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ${{ vars.REGISTRY_NAME }}.azurecr.io
+  BASE_IMAGE: steamcmd:latest
+  IMAGE_NAME: valheim
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get ACR Access Token
+        id: get-acr-token
+        run: |
+          ACR_TOKEN=$(az acr login --name ${{ vars.REGISTRY_NAME }} --expose-token --output tsv --query accessToken)
+          echo "::add-mask::$ACR_TOKEN" # mask the token in workflow logs
+          echo "token=$ACR_TOKEN" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to Azure Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: 00000000-0000-0000-0000-000000000000
+          password: ${{ steps.get-acr-token.outputs.token }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Update .env
+        working-directory: servers/valheim
+        run: |
+          # Set the .env file name
+          ENV_FILE=".env"
+
+          # Copy the sample .env file to .env
+          cp .env.sample .env
+
+          # Update the required environment variables in the .env file
+          sed -i "s|^REPO_NAME=.*|REPO_NAME=${{ env.REGISTRY }}|" "$ENV_FILE"
+          sed -i "s|^VERSION_TAG=.*|VERSION_TAG=${{ github.run_number }}|" "$ENV_FILE"
+          sed -i "s|^SERVER_NAME=.*|SERVER_NAME=${{ vars.VALHEIM_SERVER_NAME }}|" "$ENV_FILE"
+          sed -i "s|^SERVER_PASSWORD=.*|SERVER_PASSWORD=${{ secrets.VALHEIM_SERVER_PASSWORD }}|" "$ENV_FILE"
+          sed -i "s|^WORLD_NAME=.*|WORLD_NAME=${{ vars.VALHEIM_WORLD_NAME }}|" "$ENV_FILE"
+
+      - name: Build and push
+        working-directory: servers/valheim
+        run: |
+          docker compose build valheim
+          docker compose push valheim
