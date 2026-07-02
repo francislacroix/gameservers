@@ -18,8 +18,14 @@ if [[ -z "$servertype" ]]; then
     exit 1
 fi
 
+# Create a directory for the server type if it doesn't exist
+mkdir -p servers/$servertype
+cd servers/$servertype
+
+# Download the necessary files for the specified server type
 curl -O https://raw.githubusercontent.com/francislacroix/gameservers/refs/heads/main/servers/$servertype/.env.sample
 curl -O https://raw.githubusercontent.com/francislacroix/gameservers/refs/heads/main/servers/$servertype/Dockerfile
 curl -O https://raw.githubusercontent.com/francislacroix/gameservers/refs/heads/main/servers/$servertype/compose.yaml
 
+# Rename the downloaded .env.sample file to .env
 mv ./.env.sample ./.env
