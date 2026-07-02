@@ -30,7 +30,7 @@ COPY DedicatedServer.ini /opt/dragonwildsserver/RSDragonwilds/Saved/Config/Linux
 VOLUME ["/opt/dragonwildsserver/RSDragonwilds/Saved"]
 
 # Expose the ports (N and N+1 are used for the server)
-EXPOSE 7777 7778
+EXPOSE ${SERVER_PORT_RANGE}
 
 # Run the Dragonwilds server
 ENTRYPOINT ["./RSDragonwildsServer.sh"]
