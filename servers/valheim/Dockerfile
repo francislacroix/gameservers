@@ -42,7 +42,7 @@ RUN sed -i "s/My server/${SERVER_NAME}/g" start_server.sh \
 RUN chmod +x start_server.sh
 
 # Set the volume for saved content for persistent storage
-VOLUME ["/home/valheim/.config/unity3d/IronGate/Valheim/worlds"]
+VOLUME ["/home/valheim/.config/unity3d/IronGate/Valheim/"]
 
 # Expose the ports (N and N+1 are used for the server)
 EXPOSE ${SERVER_PORT_RANGE}

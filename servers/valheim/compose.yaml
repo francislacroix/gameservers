@@ -19,5 +19,5 @@ services:
       - "${SERVER_PORT_RANGE}:${SERVER_PORT_RANGE}/udp"
       - "${SERVER_PORT_RANGE}:${SERVER_PORT_RANGE}/tcp"
     volumes:
-      - /gameservermounts/${CONTAINER_NAME}:/home/valheim/.config/unity3d/IronGate/Valheim/worlds
+      - ${LOCAL_MOUNT_PATH}/${CONTAINER_NAME}:/home/valheim/.config/unity3d/IronGate/Valheim/
     restart: unless-stopped
