@@ -8,13 +8,11 @@ services:
       args:
         - BASE_IMAGE=${REPO_NAME}/${BASE_IMAGE}
         - SERVER_NAME=${SERVER_NAME}
-        - SERVER_BASE_PORT=${SERVER_BASE_PORT}
-        - SERVER_PORT_RANGE=${SERVER_PORT_RANGE}
-        - SERVER_PASSWORD=${SERVER_PASSWORD}
-        - WORLD_NAME=${WORLD_NAME}
       tags:
         - ${REPO_NAME}/valheim:latest
         - ${REPO_NAME}/valheim:${VERSION_TAG}
+    env_file:
+      - .env
     ports:
       - "${SERVER_PORT_RANGE}:${SERVER_PORT_RANGE}/udp"
       - "${SERVER_PORT_RANGE}:${SERVER_PORT_RANGE}/tcp"
